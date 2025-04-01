@@ -39,6 +39,9 @@ public class ZonaFitForma extends JFrame{
                 cargarClienteSeleccionado();
             }
         });
+        eliminarButton.addActionListener(e -> eliminarCliente());
+
+        limpiarButton.addActionListener(e -> limpiarFormulario());
     }
 
     private void iniciarForma(){
@@ -50,10 +53,19 @@ public class ZonaFitForma extends JFrame{
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.tablaModeloClientes = new DefaultTableModel(0,4);
+        //this.tablaModeloClientes = new DefaultTableModel(0,4);
+        // Evitamos la edicion de los valores de las celdas de la tabla
+        this.tablaModeloClientes = new DefaultTableModel(0,4){
+            @Override
+            public boolean isCellEditable(int row, int column){
+                return false;
+            }
+        };
         String[] cabeceros = {"Id","Nombre","Apellido","Membresia"};
         this.tablaModeloClientes.setColumnIdentifiers(cabeceros);
         this.clientesTabla = new JTable(tablaModeloClientes);
+        // Restringimos la seleccion de la tabla
+        this.clientesTabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         // Cargar listado de clientes
         listarClientes();
     }
@@ -87,11 +99,12 @@ public class ZonaFitForma extends JFrame{
         var nombre = nombreTexto.getText();
         var apellido = apellidoTexto.getText();
         var membresia = Integer.parseInt(membresiaTexto.getText());
-        var cliente = new Cliente();
-        cliente.setNombre(nombre);
-        cliente.setApellido(apellido);
-        cliente.setMembresia(membresia);
-        this.clienteServicio.guardarCliente(cliente); //inserta
+        var cliente = new Cliente(this.idCliente,nombre,apellido,membresia);
+        this.clienteServicio.guardarCliente(cliente); //inserta / modifica
+        if (this.idCliente == null)
+            mostrarMensaje("Se agrego el nuevo cliente");
+        else
+            mostrarMensaje("Se actualizo el cliente");
         limpiarFormulario();
         listarClientes();
     }
@@ -110,6 +123,26 @@ public class ZonaFitForma extends JFrame{
         }
     }
 
+    private void eliminarCliente(){
+        // Seleccionar un registro, presionar eliminar de la base de datos,
+        // limpiar el formulario y recargar lista
+        var renglon = clientesTabla.getSelectedRow();
+
+        if (renglon != -1){
+            var idClienteStr = clientesTabla.getModel().getValueAt(renglon,0).toString();
+            this.idCliente = Integer.parseInt(idClienteStr);
+            var cliente = new Cliente();
+            cliente.setId(this.idCliente);
+            clienteServicio.eliminarCliente(cliente);
+            mostrarMensaje("Cliente con id: "+this.idCliente + " Eliminado");
+            limpiarFormulario();
+            listarClientes();
+        }
+        else
+            mostrarMensaje("Debe seleccionar un cliente a eliminar");
+
+    }
+
     private void mostrarMensaje(String mensaje){
         JOptionPane.showMessageDialog(this,mensaje);
     }
@@ -118,5 +151,8 @@ public class ZonaFitForma extends JFrame{
         nombreTexto.setText("");
         apellidoTexto.setText("");
         membresiaTexto.setText("");
+        this.idCliente = null;
+        // Deseleccionamos el registro seleccionado de la tabla
+        this.clientesTabla.getSelectionModel().clearSelection();
     }
 }
