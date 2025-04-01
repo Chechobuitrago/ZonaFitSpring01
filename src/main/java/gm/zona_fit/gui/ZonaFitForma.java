@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -85,12 +83,12 @@ public class ZonaFitForma extends JFrame{
     }
 
     private void guardarCliente(){
-        if (nombreTexto.getText().equals("")){
+        if (nombreTexto.getText().isEmpty()){
             mostrarMensaje("Proporciona un nombre");
             nombreTexto.requestFocusInWindow();
             return;
         }
-        if (membresiaTexto.getText().equals("")){
+        if (membresiaTexto.getText().isEmpty()){
             mostrarMensaje("Proporciona una membresia");
             membresiaTexto.requestFocusInWindow();
             return;
